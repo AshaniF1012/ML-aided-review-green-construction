@@ -1,0 +1,18 @@
+﻿Category,Area,Number
+Approach,Analytical,736
+Approach,Empirical,238
+Approach,Hybrid,70
+Approach,ML,94
+Hazard,Earthquake,940
+Hazard,Flood,151
+Hazard,Tsunami,29
+Hazard,Hurricane,18
+Building Material,RC,174
+Building Material,Wood,100
+Building Material,Steel,17
+Building Material,Masonry,129
+Building Type,Low-rise,315
+Building Type,Med-rise,16
+Location,Regional,300
+Location,Urban,162
+Building Usage,Residential,375

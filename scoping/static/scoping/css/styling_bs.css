@@ -1,0 +1,394 @@
+body {
+    background: #D5DFF5;
+}
+
+.flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex > div {
+    margin: 0px 15px;
+}
+
+.pagination > li {
+    margin: 0px 5px;
+}
+
+.buttonp {
+    background-color: yellow;
+    border: 2px solid grey;
+    border-radius: 3px;
+    padding: 2px 7px;
+    cursor: pointer;
+}
+
+.extra-high {
+    line-height: 2.5em;
+}
+
+span.field_name {
+    padding: 0.5em;
+}
+
+.changed {
+    background-color: rgba(200, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+html, body {
+    height: 100%;
+}
+
+
+.padded  td, .padded th {
+  padding: 10px;
+  border: 1px solid black;
+}
+
+div.explanation {
+    width:60%;
+	margin-left: auto;
+    margin-right: auto;
+    border: 3px solid #FFE5CC;
+    border-radius: 5px;
+    background-color: white;
+    padding: 10px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 260px;
+    height: 44px;
+    padding: 2px;
+    font: 10px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+#main {
+    min-height: 100%;
+    overflow-y: hidden;
+}
+
+/* Highlight toreview docs */
+
+#main table td.review a {
+	background-color: transparent;
+	padding: 5px;
+	box-shadow: 2px 2px 5px 5px pink inset;
+}
+
+
+#main table td.review0 a {
+	background-color: transparent;
+	box-shadow: inset 0 -4px 0 white, inset 0 -2.5px 2 blue;
+	padding: 0px !important;
+	box-shadow: none !important;
+}
+
+/* Textbox in paragraph screening */
+
+div.text-con {
+    height: 50rem;
+    overflow-y: scroll;
+}
+
+connection {
+    z-index: 0;
+    border: 3px solid;
+    border-radius: 7em;
+    color: rgb(128, 128, 128);
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.hidden {
+    display:none !important;
+}
+
+.t1 {
+	background-color: #fbb4ae;
+}
+
+.t2 {
+	background-color: #b3cde3;
+}
+
+.t3 {
+	background-color: #ccebc5;
+}
+
+.t4 {
+	background-color: #decbe4;
+}
+
+.t5 {
+	background-color: #fed9a6;
+}
+
+.t6 {
+	background-color: #ffffcc;
+}
+
+.t7 {
+	background-color: #e5d8bd;
+}
+
+.t8 {
+	background-color: #fddaec;
+}
+
+.t9 {
+	background-color: #f2f2f2;
+}
+
+
+.hidden{
+    display: none;
+}
+
+.field_name, .inn_name {
+    cursor: pointer;
+    padding: 6px;
+    margin: 6px 2px;
+    white-space:nowrap;
+    background-color: #DCDCDC;
+    border: 1px solid black;
+    border-radius: 2px;
+}
+
+.field_name.active {
+    background-color: #fbb4ae !important;
+}
+
+p.field_container, p#field_container {
+ line-height: 250%;
+}
+
+[data-active="true"] {
+    background-color: #fbb4ae !important;
+}
+
+[data-active="false"] {
+    background-color: white;
+}
+
+[data-active="true"], [data-active="false"] {
+    cursor:pointer;
+    padding: 4px;
+}
+
+button.filter {
+    line-height: 100%;
+    padding: 3px;
+}
+
+button.filter:hover {
+    background-color: #ccc;
+}
+
+a:not([href]):not([tabindex]) {
+    color: #007bff;
+    cursor: pointer;
+}
+
+a:not([href]):not([tabindex]):hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* SWITCHES */
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #fbb4ae;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+output {
+	display:inline-block;
+	text-align: center;
+	width: 3em;
+}
+
+p.text-selected{font-weight: bold;}
+p.text-selected::selection{background:#ff0; color:#f00}
+p.text-selected::moz-selection{background:#ff0; color:#f00}
+
+div.tools {
+    display: none;
+    box-shadow: 0px 0px 4px rgba(0,0,0,.5);
+    border: solid 1px #000;
+    position: absolute;
+    background: #fff;
+}
+
+div.tools_statement {
+    /* display: none;*/
+    margin: 1px;
+    padding: 1px 1px;
+    /* box-shadow: 0px 0px 4px rgba(0,0,0,.5);
+    border:  solid 0px #000;
+    border-radius: 10px; */
+    position: absolute;
+    background: #fff;
+}
+
+div.tools_statement2 {
+    /* display: none;*/
+    margin: 1px;
+    padding: 1px 1px;
+    border: 0px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    /* box-shadow: 0px 0px 4px rgba(0,0,0,.5);
+    border:  solid 0px #000;
+    border-radius: 10px; */
+    /*position: absolute; */
+    /* background: #fff; */
+}
+
+
+.statement {
+  border: solid 2px #f00;
+  border-radius: 10px;
+  background: #fdff94;
+  color: #f00;
+}
+
+.tools{
+  font-size: 10pt;
+  margin: 2px;
+  padding: 5px;
+  border: 0px;
+  border-radius: 10px;
+  background: #440000;
+}
+
+.tagtools{
+  font-size: 10pt;
+  margin: 0px;
+  padding: 3px;
+  border: 0px;
+}
+
+td.tagtools{
+  padding: 5px 10px 5px 10px;
+}
+
+.btn.cat {
+  padding: 4px;
+  font-size: 10pt;
+}
+
+button.btntagimg{
+  background-color: #fff;
+  border: 0px;
+  margin: 0px;
+  padding: 0px 10px 0px 10px;
+}
+
+button.btntagimg2{
+  background-color: #fff;
+  border: 0px;
+  margin: 0px;
+  padding: 10px 10px 10px 10px;
+}
+
+.btntagimg:hover {
+    transform: scale(1.25, 1.25); /** default is 1, scale it to 1.5 */
+    opacity: 1;
+}
+.btntagimg2:hover {
+    transform: scale(1.25, 1.25); /** default is 1, scale it to 1.5 */
+    opacity: 1;
+}
+
+button.btntool{
+  background-color: #fff;
+  border: 0px;
+}
+
+button.btntag{
+  font-size: 10pt;
+  margin: 0px;
+  padding: 1px;
+}
+
+button.True {
+    background-color: #ccebc5;
+}
+
+a.True.b-yes {
+    border-color: #91cf60;
+    border-width: 5px;
+}
+
+a.True.b-no {
+    border-color: #fc8d59;
+    border-width: 5px;
+}
+
+a.True.b-maybe {
+    border-color: #FFC30B;
+    border-width: 5px;
+}
+
+
+"#91cf60", 2: "#fc8d59", 3: "#ffffbf", 0: "#F5F5F5"

@@ -1,0 +1,69 @@
+<html>
+    <head>
+        {% load static %}
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <script src="{% static 'tmv_app/js/d3.v3.min.js' %}"></script>
+        <script language="JavaScript" src="https://code.jquery.com/jquery-1.4.4.js"></script>
+        <title>Scoping</title>
+        {% if query.type == "default" %}
+          <link href="{% static 'scoping/css/styling.css' %}" rel="stylesheet" type="text/css">
+        {% else %}
+          <link href="{% static 'scoping/css/stylingsbs.css' %}" rel="stylesheet" type="text/css">
+        {% endif %}
+    </head>
+    <body>
+
+        {% include 'scoping/nav_bar.html' with user=user qid=query.id project=project %}
+        <div id="main">
+            <div id="graph">
+
+              <h1> Scoping Review Helper</h1>
+
+                <br/>
+
+                <!-- Query manager -->
+                  <h2> Query Progress </h2>
+                {% if log %}
+
+                      <br/>
+                        (Refresh page to update progress)
+                      <br/><br/>
+
+                      <div id="logbox">
+                        {% for l in log %}
+                            {{l}}<br>
+                        {% endfor %}
+                      </div>
+                {% endif %}
+
+                <br/>
+                {% if finished %}
+<!-- Scoping review -->
+                    <p>Looks like download is complete!</p>
+                    {% if doclength == 0 %}
+                        <p id="doc_adder1">These documents haven't been uploaded to the database yet. Would you like to add them now? [Please wait a while and refresh before clicking multiple times]
+                        <br/>
+                        <a href="{% url 'scoping:dodocadd' query.id %}"><button>Add Documents</button></a>
+                    {% elif query.r_count %}
+                        <p>Looks like upload is complete!</p>
+                        <p><a href="{% url 'scoping:doclist' query.project.id query.id %}">View the documents</a>
+                    {% else %}
+                        <p>Document upload in progress (This may take some time for websites other than Web of Science)
+                        <p>View the <a href="{% url 'scoping:doclist' query.project.id query.id %}">{{doclength}}</a> documents
+                          {% if query.estimated_docs %}
+                            (out of an estimated {{query.estimated_docs}})
+                          {% endif %}
+                          which have been uploaded.
+
+                          <p> Stopped? <a href="{% url 'scoping:dodocadd' query.id %}"><button>Restart document upload</button></a>
+                            This will start from the beginning (but faster for already uploaded documents), and only
+                            work if the background upload task has really been interrupted.
+                    {% endif %}
+
+                    <h4> Upload Log
+                        <p>{{query.upload_log | safe}}
+                {% endif %}
+            </div>
+        </div>
+    </body>
+</html>

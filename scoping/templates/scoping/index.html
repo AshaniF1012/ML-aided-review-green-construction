@@ -1,0 +1,52 @@
+{% extends "scoping/base_bs.html" %}
+
+{% load render_table from django_tables2 %}
+
+{% block content %}
+
+<h1> Scoping Review Helper</h1>
+<br>
+<h2> Homepage </h2>
+<br>
+
+<div >
+    <h3> Manage Projects
+
+    {% render_table acproj %}
+
+    <p class="left"><span class="buttonp" id="reveal_new">+</span></p>
+
+    <div id="new_div" class="hidden">
+
+        <form method="POST" class="post-form">{% csrf_token %}
+        {{ newproj.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+        </form>
+
+    </div>
+
+
+
+
+
+</div>
+
+{% endblock %}
+
+
+
+{% block script %}
+<script type="text/JavaScript">
+
+    $("#reveal_new").click( function() {
+        if ($("#reveal_new").html()=="+") {
+            $("#reveal_new").html("-")
+        } else{
+            $("#reveal_new").html("+")
+        }
+        $("#new_div").toggleClass("hidden")
+    })
+
+</script>
+
+{% endblock %}

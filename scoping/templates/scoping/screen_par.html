@@ -1,0 +1,736 @@
+{% extends "scoping/base_bs.html" %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block content %}
+
+{% csrf_token %}
+
+<br>
+<h1> Scoping Review Helper</h1>
+<br>
+<h2> Query Sampler (<a href="{% url 'scoping:query' tag.query.id %}">Query no. {{tag.query.id}}</a>) - Welcome, {{user.username}}, your progress: </h2>
+
+<div class="progress m-5">
+  <div class="progress-bar" role="progressbar" style="width: {{pc}}%;" aria-valuenow="{{pc}}" aria-valuemin="0" aria-valuemax="100">{{pc}}%</div>
+</div>
+
+<!-- Document info -->
+<div class="row">
+    <div class="panel-group container doc-con bg-white my-3 p-2 border rounded col-md-10 ">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a data-toggle="collapse" href="#collapse1">
+                <h4 class="panel-title"> {{ title | safe }}, {{ do.docpar.doc.wosarticle.so }}
+                    {% if do.docpar.doc.wosarticle.py %}
+                        ({{ do.docpar.doc.wosarticle.py }})</h4>
+                    {% endif %}
+                </a>
+            </div>
+            <div id="collapse1" class="panel-collapse collapse">
+                <p><a target="_blank" href="http://dx.doi.org/{{ doc.wosarticle.di }}">{{ doc.wosarticle.di}}</a>
+                <p style="text-align:left">
+                {{ doc.docauthinst }}
+                {% for au in authors %}
+                <span>{% if au.AF %}
+                    {{au.AF}}
+                    {% else %}
+                    {{au.AU}}
+                    {% endif %}
+                    [{{au.institution|safe}}];</span>
+                {% endfor %}
+                <p style="text-align:left">
+                    Author keywords: {{de | safe}}
+                <p style="text-align:left">
+                    WoS Keywords Plus: {{kwp | safe}}
+                <p style="text-align:left">
+                  Document ID: <a href="{% url 'scoping:document' tag.query.project.id do.docpar.doc.id %}">{{do.docpar.doc.pk}}</a>
+                {% if do.docpar.doc.docfile %}
+                    <p style="text-align;left">
+                        PDF: <a href="{% url 'scoping:download_pdf' do.docpar.doc.docfile.id %}">View</a>
+                    </p>
+                {% endif %}
+                <p style="text-align:left">
+                {{ abstract | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+<!--
+<div class="container col-md-3">
+
+    <div class="border rounded bg-white my-3 p-2">
+        Add a note to this paragraph
+        <hr>
+        <form action="{% url 'scoping:add_note' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <input type="hidden" name="docn" value="{{do.docpar.id}}"></input>
+          <input type="hidden" name="tag" value="{{tag.id}}"></input>
+        <textarea class="form-control" name="note" rows=3>
+        </textarea>
+        <br>
+        <p>
+        <button type="submit" class="btn btn-primary">Add note</button>
+    </form>
+    </div>
+
+
+    {% for note in notes %}
+    <div class="border rounded bg-white my-3 p-2 note">
+    <p class="notedesc"><b>{{note.date}}, {{note.user.username}} wrote...</b>
+    <hr>
+    {{note.text}}
+    <hr>
+    <a href="{% url 'scoping:delete' thing='Note' thingid=note.pk %}">Delete
+    </a>
+
+    </div>
+    {% endfor %}
+</div>
+-->
+
+<div id="listdocpars" class="container text-con bg-white my-3 p-2 border rounded col-md-8 ">
+    {% for d in pars %}
+        {% if d.1 == do.docpar.id %}
+            <p class="text-selected" id={{d.1}}>{{ d.0 | safe}}</p>
+        {% else %}
+            <p class="text-muted" id={{d.1}}>{{ d.0 | safe }}</p>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Column 3, relevance and next-->
+<div class="container col-md-3">
+    <form id="ratepar" action="{% url 'scoping:rate_par' tag.id ctype do.id todo done %}" method="POST">
+    <div class="border rounded bg-white my-3 p-2">
+       {% csrf_token %}
+       <p class="lead">Is this document relevant to the tag: {{tag.title}}?</p>
+       <hr>
+        <!-- <div class="btn-group btn-group-toggle" data-toggle="buttons"> -->
+          <label class="btn btn-secondary">
+            <input id="ratepos" type="radio" name="relevant" id="option1" autocomplete="off" value=1>Yes
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="relevant" id="option2" autocomplete="off" value=2>No
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="relevant" id="option3" autocomplete="off" value=3>Maybe
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="relevant" id="option3" autocomplete="off" value=9>Parse error
+          </label>
+        <!-- </div> -->
+    </div>
+    <br>
+    {% bootstrap_button 'Save/Next >>>' %}
+    </form>
+<!--         {% for l in levels %}
+            <div class="border rounded bg-white my-3 p-2">
+                Which level {{l.0.1.level}} categories is this paragraph relevant to?
+                (hover for more info)
+                        <hr>
+                    {% for t in l %}
+                    <button value="{{t.1.id}}" type="button" class="btn cat {{t.0}}" data-toggle="tooltip" data-placement="top" title="{{t.1.description}}">{{t.1}}</button>
+
+                    {% endfor %}
+            </div>
+        {% endfor %} -->
+
+    <br>
+    <!-- Form to add a note -->
+    <div class="border rounded bg-white my-3 p-2">
+        Add a note to this paragraph
+        <hr>
+        <form action="{% url 'scoping:add_note' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <input type="hidden" name="docn" value="{{do.docpar.id}}"></input>
+          <input type="hidden" name="tag" value="{{tag.id}}"></input>
+        <textarea class="form-control" name="note" rows=3>
+        </textarea>
+        <br>
+        <p>
+        <button type="submit" class="btn btn-primary">Add note</button>
+        </form>
+    </div>
+
+    <!-- Show all the notes -->
+    {% for note in notes %}
+    <div class="border rounded bg-white my-3 p-2 note">
+      <p class="notedesc"><b>{{note.date}}, {{note.user.username}} wrote...</b>
+      <hr>
+      {{note.text}}
+      <hr>
+      <a href="{% url 'scoping:delete' thing='Note' thingid=note.pk %}">Delete
+      </a>
+    </div>
+    {% endfor %}
+
+
+</div>
+
+</div>
+
+</div>
+
+<div class="tools_statement">
+  <button id="btn_add_stat" type="button" title="Add statement" value="add"><img src="{% static 'scoping/img/icon_add.png' %}" width="20px" height="20px"></button>
+  <!-- <img src="{% static 'scoping/img/icon_add.png' %}" width="20px" height="20px"/> Add statement -->
+  <!-- <li><img src="{% static 'scoping/img/icon_del.png' %}" width="20px" height="20px"/></li> -->
+</div>
+
+{% for s in stats_cats %}
+  <div class="tools" id="statool{{s.0.0.0}}">
+    <div class="tools_statement2">
+      <i style="color:#333">Click here to remove</i>
+      <button class="btntool btn_del_stat" id="btndel{{s.0.0.0}}"type="button" title="Remove statement from the database" value="remove"><img src="{% static 'scoping/img/icon_del.png' %}" width="20px" height="20px"/></button>
+    </div>
+
+    <br>
+
+    <table>
+      <tr>
+        <td width="160px" style="padding: 0px 5px 0px 5px; border-right:1pt solid black; text-align: center;" rowspan="2" valign="center"><strong>Boundaries / Assumptions</strong></td>
+        <td width="780px" style="padding: 0px 5px 0px 5px; border-bottom:1pt solid black; text-align: left;" colspan="2"><strong><i>Statements</i></strong></td>
+      </tr>
+      <tr>
+
+        <td width="350px" style="padding: 0px 5px 0px 5px;"><strong>Categories</strong></td>
+        <td width="400px"><strong>Common statements</strong></td>
+      </tr>
+
+      <tr><td style="padding: 10px 0px 0px 0px; border-bottom:1pt solid black; border-right:1pt solid black;"></td><td style="padding: 10px 0px 0px 0px; border-bottom:1pt solid black;"></td><td style="padding: 10px 0px 0px 0px; border-bottom:1pt solid black;"></td><</tr>
+      <tr><td style="padding: 0px 0px 10px 0px; border-bottom:0pt solid black; border-right:1pt solid black;"></td><td style="padding: 0px 0px 10px 0px; border-bottom:0pt solid black;"></td><td style="padding: 0px 0px 10px 0px; border-bottom:0pt solid black;"></td></tr>
+
+      {% for l in s %}
+      {% if l.0.2.level == 1 %}
+      <tr class="tagtools">
+        <td class="tagtools" width="160px" rowspan="6" style="padding: 0px 5px 0px 5px; border-right:1pt solid black;">
+          {% for t in l %}
+            <!-- <button value="{{t.2.id}}" type="button" class="btntag cat {{t.1}}" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">{{t.2}}</button> -->
+            <button value="{{t.2.id}}" type="button" class="btntagimg2 cat" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">
+              {% if t.1 %}
+                {% with 'scoping/img/'|add:t.2.name|add:'_true.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+              {% else %}
+                {% with 'scoping/img/'|add:t.2.name|add:'.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+                <!-- <img id="myImg{{t.2.id}}" src="{% static 'scoping/img/H1_Important.png' %}"/> -->
+              {% endif %}
+            </button>
+          {% endfor %}
+        </td>
+        <td class="tagtools"></td>
+        <td class="tagtools"></td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+
+      {% for l in s %}
+      {% if l.0.2.level > 1 and l.0.2.level < 7 %}
+      <tr class="tagtools">
+        <td class="tagtools">
+          {% for l2 in s %}
+          {% if l2.0.2.level == 7 %}
+          {% for t2 in l2 %}
+          {% if t2.2.group == l.0.2.group %}
+          <button value="{{t2.2.id}}" type="button" class="btntagimg cat" data-toggle="tooltip" data-placement="top" title="{{t2.2.description}}">
+            {% if t.1 %}
+              {% with 'scoping/img/'|add:t2.2.name|add:'_true.png' as image_static %}
+                <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+              {% endwith %}
+            {% else %}
+              {% with 'scoping/img/'|add:t2.2.name|add:'.png' as image_static %}
+                <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+              {% endwith %}
+            {% endif %}
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+          </button>
+          {{l.0.2.group}}
+        </td>
+        <td class="tagtools">
+          {% for t in l %}
+            <button value="{{t.2.id}}" type="button" class="btntagimg cat" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">
+              {% if t.1 %}
+                {% with 'scoping/img/'|add:t.2.name|add:'_true.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+              {% else %}
+                {% with 'scoping/img/'|add:t.2.name|add:'.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+              {% endif %}
+            </button>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+
+      <!-- <tr><td style="padding: 10px 0px 0px 0px; border-bottom:1pt solid #ccc;"></td><td style="padding: 10px 0px 0px 0px; border-bottom:1pt solid #ccc;"></td><td></td></tr> -->
+      <!-- <tr><td style="padding: 0px 0px 10px 0px; border-bottom:0pt solid #888;"></td><td style="padding: 0px 0px 10px 0px; border-bottom:0pt solid #888;"></td><td></td></tr> -->
+<!--
+      {% for l in s %}
+      {% if l.0.2.level == 6 %}
+      <tr class="tagtools">
+        <td class="tagtools">Other</td>
+        <td class="tagtools">
+          {% for t in l %}
+
+            <button value="{{t.2.id}}" type="button" class="btntagimg cat" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">
+              {% if t.1 %}
+                {% with 'scoping/img/'|add:t.2.name|add:'_true.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+              {% else %}
+                {% with 'scoping/img/'|add:t.2.name|add:'.png' as image_static %}
+                  <img id="myImg{{t.2.id}}" src="{% static image_static %}" width="80%" height="80%"/>
+                {% endwith %}
+
+              {% endif %}
+            </button>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    -->
+<!--
+    {% for l in s %}
+    <div class="tagtools">
+        {{l.0.2.group}}
+        {% for t in l %}
+            <button value="{{t.2.id}}" type="button" class="btntag cat {{t.1}}" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">{{t.2}}</button>
+        {% endfor %}
+    </div>
+    {% endfor %}
+-->
+<!--
+      <tr><td style="padding: 10px 10px 0px 0px; border-bottom:1pt solid black;"></td><td style="padding: 10px 10px 0px 0px; border-bottom:1pt solid black;"></td></tr>
+      <tr class="tagtools">
+        <td valign="top" style="padding: 10px 0px 0px 0px;">Other</td>
+        <td style="padding: 10px 0px 0px 0px;">
+          <form id="newcomstat{{s.0.0.0}}" class="newcomstat" action="" method="">
+            {% if s.0.0.3 %}
+              {% for l in s %}
+              {% for t in l %}
+              {% if t.2.level == 6 %}
+              {% if t.1 %}
+              <button id="del_othercat{{s.0.0.0}}" name="remove" value="{{t.2.id}}" type="button" class="btn del_othercat {{t.1}}" data-toggle="tooltip" data-placement="top" title="{{t.2.description}}">{{t.2.group}}</button>
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+              {% endfor %}
+            {% else %}
+              <select id="add_othercat{{s.0.0.0}}" name="other_categories" class="add_othercat">
+                <option value="0" selected="selected">-- Select an option --</option>
+                {% for l in s %}
+                {% for t in l %}
+                {% if t.2.level == 6 %}
+                  <option value="{{t.2.id}}">{{t.2.group}}</option>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+              </select>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+-->
+
+    </table>
+  </div>
+{% endfor %}
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+if (!window.x) {
+    x = {};
+}
+
+x.Selector = {};
+x.Selector.getSelected = function() {
+    var t = '';
+    // Chrome
+    if (window.getSelection) {
+        s = window.getSelection();
+        if (s.anchorNode.parentNode.classList.contains("text-selected")) {
+            t = s;
+        }
+    // Firefox
+    } else if (document.getSelection) {
+        s = document.getSelection();
+        if (s.anchorNode.parentNode.classList.contains("text-selected")) {
+            t = s;
+        }
+    // Explorer
+    } else if (document.selection) {
+        s = document.selection.createRange().text;
+        if (s.anchorNode.parentNode.classList.contains("text-selected")) {
+            t = s;
+        }
+        //t = document.selection.createRange().text;
+    }
+    return t;
+}
+
+var pageX;
+var pageY;
+var statementid;
+
+// using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+// Event handlers to be attached once the DOM is ready
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+
+    $(document).bind("mouseup", function() {
+        var selectedText = x.Selector.getSelected();
+        if(selectedText != ''){
+            // Display statement tool box
+            //tools_statement = true;
+            $('div.tools_statement').css({
+                'left': pageX + 5,
+                'top' : pageY - 55
+            }).fadeIn(200);
+
+        } else {
+            //tools_statement = false;
+            $('div.tools_statement').fadeOut(200);
+        }
+    });
+    $(document).on("mousedown", function(e){
+          //if (!tools_statement){
+            pageX = e.pageX;
+            pageY = e.pageY;
+          //}
+    });
+    $(document).on("mouseup", function(e) {
+        var container = $(".tools");
+
+        // if the target of the click isn't the container nor a descendant of the container
+        if (!container.is(e.target) && container.has(e.target).length === 0)
+        {
+            container.hide();
+        }
+    });
+
+    // Process DocStatement
+    $(document).on("click", ".statement", function(e) {
+
+      pageX = e.pageX;
+      pageY = e.pageY;
+
+      statementid = $(this).attr("id");
+
+      // Tag DocStatement
+      $('#statool'+statementid).css({
+          'left': pageX + 5,
+          'top' : pageY + 10
+      }).fadeIn(200);
+
+    });
+
+    // Delete DocStatement
+    $(document).on("click", ".btn_del_stat", function() {
+
+      var data = {
+            "idstat" : statementid,
+            "idpar" : "{{do.docpar.pk}}",
+            "tid"   : "{{tag.pk}}"
+          };
+
+      $.ajax({
+          url: "{% url 'scoping:del_statement' %}",
+          method: "POST",
+          data: data,
+          success: function(data) {
+              $("p#{{do.docpar.pk}}").replaceWith(data);
+              $('#statool'+statementid).remove();
+          },
+          dataType: 'html'
+      })
+    })
+
+    // Add new DocStatement
+    $(document).on("click", "#btn_add_stat", function() {
+      var s = x.Selector.getSelected(); //window.getSelection();
+      if (s.anchorNode.parentNode.nodeName.toLowerCase() == "span") {
+        var text_paragraph = s.anchorNode.parentNode.parentNode.innerText;
+      } else {
+        var text_paragraph = s.anchorNode.parentNode.innerText;
+      }
+      var text_selection = s.toString();
+      console.log(text_paragraph);
+      console.log(text_selection);
+      var match_text_par = text_paragraph.match(escapeRegExp(text_selection));
+      console.log(match_text_par)
+      var startSelection = match_text_par.index; // Get start of selection in paragraph
+      console.log(startSelection)
+      var endSelection   = startSelection + text_selection.length;
+      console.log(endSelection)
+
+      var data = {
+            "idpar" : "{{do.docpar.pk}}",
+            "text"  : text_selection,
+            "par"   : text_paragraph,
+            "start" : startSelection,
+            "end"   : endSelection,
+            "tid"   : "{{tag.pk}}",
+            "doid"  : "{{do.pk}}",
+            "userid": "{{user.pk}}"
+          }
+
+      $.ajax({
+          url: "{% url 'scoping:add_statement' %}",
+          data: data,
+          method: "POST",
+          success: function(data) {
+            sep = data.indexOf("_!SEP!_");
+            html_par = data.substring(0, sep)
+            html_div = data.substring(sep+7, data.length)
+            $("p#{{do.docpar.pk}}").replaceWith(html_par);
+            $("#main").append(html_div);
+            // need to add a new tools div
+          },
+          dataType: 'html'
+      });
+
+      $('div.tools_statement').fadeOut(200);
+
+      // Switch radio button in form XXX to Yes
+      $("#ratepos").prop("checked", true);
+    });
+
+    // Update statement's categories
+    $(document).on("click", ".cat", function(){
+         // Get tag ID
+         id2 = $(this).val();
+         imgsrc = $(this).children("img")[0].src
+         console.log(imgsrc.substring(imgsrc.length-8, imgsrc.length-4));
+         condition = imgsrc.substring(imgsrc.length-8, imgsrc.length-4);
+
+         // Check button status
+         if (condition == "true") {
+             method = "remove";
+             $(this).children("img")[0].src = imgsrc.substring(0, imgsrc.length-9)+".png"
+         } else {
+             method = "add";
+             $(this).children("img")[0].src = imgsrc.substring(0, imgsrc.length-4)+"_true.png"
+         };
+
+         // Toggle button status
+         //$(this).toggleClass("True");
+
+         // Send info to server
+         $.ajax({
+             url: "{% url 'scoping:update_thing' %}",
+             data: {
+               "thing1": "DocStatement",
+               "id1": statementid,
+               'thing2': 'Technology',
+               'id2': id2,
+               "method": method
+             },
+             success: function(data) {
+                // Do nothing
+             }
+         });
+     });
+
+    $(document).on("click", ".del_othercat", function(e){
+
+      var sid = $(this).attr("id");
+      sid = sid.substring(13, sid.length);
+      console.log(statementid)
+      console.log(sid)
+
+      var tid = $(this).attr("value");
+
+      // Send info to server
+      $.ajax({
+          url: "{% url 'scoping:del_othercat' %}",
+          data: {
+            "sid": statementid,
+            'tid': tid,
+            'tagid': "{{tag.pk}}"
+          },
+          success: function(data) {
+            //$("#newcomstat"+statementid).innerHTML='';
+            $("#del_othercat"+statementid).remove();
+            $("#newcomstat"+statementid).append(data);
+          }
+      });
+    });
+
+    $(document).on("change", ".add_othercat", function(e){
+
+      var sid = $(this).attr("id");
+      sid = sid.substring(13, sid.length);
+      console.log(statementid)
+      console.log(sid)
+
+      var tid = $(this).val();
+      console.log(tid)
+
+      // Send info to server
+      $.ajax({
+          url: "{% url 'scoping:add_othercat' %}",
+          data: {
+            "sid": statementid,
+            'tid': tid
+          },
+          success: function(data) {
+            //$("#newcomstat"+statementid).innerHTML='';
+            $("#add_othercat"+statementid).remove();
+            $("#newcomstat"+statementid).append(data);
+          }
+      });
+    });
+
+    // $(document).on("submit", ".newcomstat", function(e){
+    //
+    //     e.preventDefault();
+    //
+    //     var fields = $(this).serializeArray();
+    //     console.log(fields)
+    //
+    //     jQuery.each( fields, function( i, field ) {
+    //      if (field.name == "other_categories") {
+    //        tid = field.value
+    //      };
+    //      if (field.name == "add") {
+    //        add = field.value
+    //      };
+    //      if (field.name == "remove") {
+    //        rm = field.value
+    //      };
+    //     });
+    //
+    //     if (add == "False") {
+    //         method = "remove";
+    //     } else {
+    //         method = "add";
+    //     };
+    //     console.log(tid)
+    //     console.log(add)
+    //     console.log(rm)
+    //
+    //     // // Send info to server
+    //     // $.ajax({
+    //     //     url: "{% url 'scoping:update_thing' %}",
+    //     //     data: {
+    //     //       "thing1": "DocStatement",
+    //     //       "id1": statementid,
+    //     //       'thing2': 'Technology',
+    //     //       'id2': tid,
+    //     //       "method": method
+    //     //     },
+    //     //     success: function(data) {
+    //     //        // Do nothing
+    //     //     }
+    //     // });
+    // });
+
+    // // Add new common statement
+    // $(document).on("submit", ".newcomstat", function(e){
+    //
+    //   e.preventDefault();
+    //   var fields = $(this).serializeArray();
+    //
+    //   jQuery.each( fields, function( i, field ) {
+    //     if (field.name == "pid") {
+    //       pid = field.value
+    //     };
+    //     if (field.name == "tname") {
+    //       tname = field.value
+    //     };
+    //     if (field.name == "tdesc") {
+    //       tdesc = field.value
+    //     };
+    //   });
+    //
+    //   console.log(pid+"\n"+tname+"\n"+tdesc);
+    //
+    //    // Send info to server
+    //    $.ajax({
+    //        url: "{% url 'scoping:async_add_tech' %}",
+    //        data: {
+    //          "pid": pid,
+    //          "tname": tname,
+    //          "tdesc": tdesc
+    //        },
+    //        success: function(data) {
+    //           // Do nothing
+    //        }
+    //    });
+    //  });
+
+    //go to paragraph
+    var elmnt = document.getElementById({{do.docpar.id}});
+    elmnt.scrollIntoView({behavior:"smooth", block:"center"});
+      // $('#listdocpars').animate({
+      //   scrollTop: $("#{{do.docpar.pk}}").offset().top
+      // }, 1000);
+});
+
+
+
+// Adjust the container #main
+$("#main").css("width", "100%");
+$("#main").removeClass("col-md-10");
+$("#main").removeClass("container");
+$("#main").addClass("p-4");
+
+$('div.tools_statement').hide();
+
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+<html>
+<head>
+{% load static %}
+{% load bootstrap4 %}
+
+{% load scoping_extras %}
+{% load render_table from django_tables2 %}
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Scoping</title>
+<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+
+<link rel="shortcut icon" type="image/png" href="{% static 'scoping/img/favicon.ico' %}"/>
+<script src="{% static 'scoping/js/d3.v3.min.js' %}"></script>
+<script src="{% static 'scoping/js/jquery-3.2.0.min.js' %}"></script>
+<script src="{% static 'scoping/js/jquery.text-select.js' %}"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+{% bootstrap_javascript %}
+{% bootstrap_css %}
+<link href="{% static 'scoping/css/styling_bs.css' %}" rel="stylesheet" type="text/css">
+
+</head>
+  <body>
+      {% include 'scoping/nav_bar_bs.html' with user=user qid=query.id query=query qid=query.id %}
+
+<div id="main" class="container bg-light col-md-10">
+    <div class="row-fluid columns content">
+    {% block content %} {% endblock %}
+    </div>
+</div>
+
+
+    </body>
+    {% block script %} {% endblock %}
+</html>

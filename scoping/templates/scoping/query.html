@@ -1,0 +1,472 @@
+{% extends "scoping/base_bs.html" %}
+{% block content %}
+{% load scoping_extras %}
+{% if request.session.appmode == "scoping" %}
+  <h1> Scoping Review Helper</h1>
+  <br/>
+
+  <!-- Query manager -->
+  <div class="explanation">
+  <h2> Query #{{query.id}} ({{query.title}}) Overview - <a href="{% url 'scoping:doclist' query.project.id query.id %}">View Docs</a></h2>
+  <p/>
+  <p>Check out the query's upload <a href="{% url 'scoping:querying' query.id %}">log</a>
+      <p>
+  This query is used in <b>[{{ query.tms }}]</b> topic models. Click <a href="{% url 'scoping:query_tm_manager' query.id %}">here</a>
+      to manage topic models with this query
+      {% if pars %}
+        <p>View/Manage document <a href="{% url 'scoping:par_manager' query.id %}">paragraphs</a>
+      {% endif %}
+  </div>
+
+  <p>
+
+
+  <table class="table" style="width:100%">
+<tr class="title">
+      <td>Tag ID </td>
+      <td>Tag Title </td>
+      <td class="field" name="docs">Sample </td>
+      <td>Assignment/Relevance </td>
+      <td>Users Assigned</td>
+      <td>Agreement Ratio</td>
+      <td>Cohen's Kappa
+      <a href="http://dx.doi.org/10.1177/001316446002000104"</a></td>
+      <td>Delete</td>
+      {% if project.id == 193 %}
+      <td>Generate report</td>
+      {% endif %}
+    </tr>
+    {% for tag in tags %}
+      <tr class="tagdatarow" name="{{ tag.id }}">
+        <td class="data">{{tag.id}}</td>
+        <td class="data">{{tag.title}}</td>
+        {% if tag.a_docs %}
+          <td>{{tag.all_docs}} ({{tag.a_docs}} assigned for review)</td>
+
+          <td>{{ tag.relevance | percentage }}</td>
+        {% else %}
+          <td><input type="range" min="0" max="{{tag.all_docs}}" oninput="inputUpdate(value, {{tag.id}})" value="{{tag.all_docs}}" autocomplete="off"></td>
+          <td class="data-ndocs">{{tag.all_docs}} [Assign <output id="out_{{tag.id}}" class="tag_assignment bg-primary text-light" data-tagid="{{ tag.id }} ">{{tag.all_docs}}</output> <b>{{tag.doctype}}</b> for review?]</td>
+
+        {% endif %}
+        <td>{{tag.users}}</td>
+        <td>{{tag.ratio}}</td>
+        <td>{{tag.cohens_kappa}}</td>
+          <td><a href="/scoping/delete/Tag/{{tag.id}}">Delete</a></td>
+          {% if project.id == 193 %}
+          <td><a href="{% url 'scoping:db1_db2_report' tag.id %}">Generate report</a></td>
+          {% endif %}
+      </tr>
+    {% endfor %}
+  </table>
+  <h2>Whole Query agreement statistics</h2>
+  <p style="text-align:left">{{query.ndocs}} Documents doublechecked by {{query.nusers}} users.
+    <p style="text-align:left">Agreement ratio: {{query.ratio}}; Cohen's Kappa: {{query.cohen_kappa}}
+
+{% if untagged %}
+  <p style="text-align:left">{{ untagged }} Documents are not tagged</p>
+{% endif %}
+
+  <br/><hr/><br/>
+
+  <h2>Criteria</h2>
+
+  <form action='/scoping/update_criteria?qid={{query.id}}' method="post">
+    {% csrf_token %}
+    <h4> Enter/edit criteria below </h4>
+    <textarea rows=3 cols=50 name="criteria">{{ query.criteria }}</textarea>
+    <br/><br/>
+    <input type="submit" value="Save changes" />
+  </form>
+
+  <br/><hr/><br/>
+
+  <div class="container">
+  <h2> Users </h2>
+  <table class="table" style="width:100%">
+    <tr class="title">
+      <td>Username</td>
+      <td>Email</td>
+      <td>Active</td>
+      <td>Docs Assigned</td>
+      <td>Relevant Docs</td>
+      <td>Irrelevant Docs</td>
+      <td>Maybe Docs</td>
+      {% if project.rating_first %}
+      <td>DB2 relevant</td>
+      {% endif %}
+    </tr>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>{{ u.email }}</td>
+        {% if u.onproject %}
+          <td>
+            <label class="switch">
+              <input type="checkbox" class="user_active" data-user="{{u.username}}" onchange="activate_user(this)" checked>
+              <div class="slider round"></div>
+            </label>
+          </td>
+        {% else %}
+          <td>
+            <label class="switch">
+              <input type="checkbox" class="user_active" data-user="{{u.username}}" onchange="activate_user(this)"></input>
+              <div class="slider round"></div>
+            </label>
+          </td>
+        {% endif %}
+
+        {% if u.user_docs.tdocs %}
+          <td>{{ u.user_docs.tdocs }} ({{ u.user_docs.checked_percent | percentage}} checked)</td>
+          <td>{{ u.user_docs.reldocs }}</td>
+          <td>{{ u.user_docs.irreldocs }}</td>
+          <td>{{ u.user_docs.maybedocs }}</td>
+          {% if project.rating_first %}
+          <td>{{u.user_docs.db2}}</td>
+          {% endif %}
+        {% else %}
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        {% endif %}
+
+      </tr>
+    {% endfor %}
+  </table>
+  </div>
+
+    <div class="container bg-white border rounded">
+      <p>
+        <!-- <table id="split_table">
+          <tr>
+              <td>Double Check Documents
+            <td>
+              <label class="switch">
+                <input type="checkbox" id="split" onclick="updateAssignment()" checked />
+                <div class="slider round"></div>
+              </label>
+            </td>
+            <td>Split Documents</td>
+          </tr>
+        </table> -->
+        <div class="row">
+            <div class="col-sm text-right">
+                Double Check Documents
+            </div>
+            <div class="col-sm text-center">
+                <label class="switch">
+                  <input type="checkbox" id="split" onclick="updateAssignment()" checked />
+                  <div class="slider round"></div>
+                </label>
+            </div>
+            <div class="col-sm text-left">
+                Split Documents
+            </div>
+        </div>
+        <div class="row" >
+          <div class="container d-flex justify-content-center">
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="title_ab_full" id="inlineRadio1" value="title">
+                <label class="form-check-label" for="inlineRadio1">Titles only</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="title_ab_full" id="inlineRadio2" value="abstract">
+                <label class="form-check-label" for="inlineRadio2">Abstracts</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="title_ab_full" id="inlineRadio3" value="full">
+                <label class="form-check-label" for="inlineRadio3">Full texts (if available)</label>
+              </div>
+            </div>
+          </div>
+
+            <!-- <div class="col-sm text-right">
+                Abstracts
+            </div>
+            <div class="col-sm text-center">
+                <label class="switch">
+                  <input type="checkbox" id="title_only" onclick="updateAssignment()" checked />
+                  <div class="slider round"></div>
+                </label>
+            </div>
+            <div class="col-sm text-left">
+                Titles
+            </div> -->
+        </div>
+      </p>
+      <p>Assign a total of <span id="docUserTotal"></span> documents each to <span id="userTotal"></span> users? <button onclick="do_assignment()">Assign</button></p>
+
+      <p>Clear all document-user assignments from this query? WARNING: This cannot be undone <button onclick="remove_assignments({{ query.id }})">Remove</button></p>
+
+    </div>
+    <br>
+  </p>
+
+{% else %}
+  <h1> Snowballing Session Helper</h1>
+  <br/>
+
+  <!-- Query manager -->
+  <h2> SBS Step #{{ sbs.step }} - Backward query #{{query.id}} / Forward query #{{ query2.id }}Overview - <a href="/scoping/docs/{{query.id}}/{{query2.id}}/{{sbs.id}}">View Docs</a></h2>
+  <br/>
+
+  <table class="light" style="width:100%">
+  <tr class="title">
+      {% for f in fields %}
+        <td class="field" name="{{f}}">{{f}} </td>
+      {% endfor %}
+      <td class="field" name="docs">Sample </td>
+      <td>Assignment/Relevance </td>
+      <td>Delete</td>
+    </tr>
+    {% for tag in tags %}
+      <tr class="tagdatarow" name="{{ tag.id }}">
+        {% for f in fields %}
+          <td class="data">{{tag|keyvalue:f}}</td>
+        {% endfor %}
+
+        {% if tag.a_docs %}
+          <td>{{tag.docs}} ({{tag.a_docs}} assigned for review)</td>
+
+          <td>{{tag.relevance}}%</td>
+        {% else %}
+          <td><input type="range" min="0" max="{{tag.docs}}" oninput="inputUpdate(value, {{tag.id}})" value="{{tag.docs}}" autocomplete="off"></td>
+          <td class="data-ndocs">{{tag.docs}} [Assign <output id="out_{{tag.id}}" class="tag_assignment" data-tagid="{{ tag.id }}">{{tag.docs}}</output> documents for review?]</td>
+
+        {% endif %}
+          <td><a href="/scoping/delete/Tag/{{tag.id}}">Delete</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <p style="text-align:left">{{ untagged }} Documents are not tagged</p>
+
+  <br/><hr/><br/>
+
+  <h2>Criteria</h2>
+
+  <form action='/scoping/update_criteria?qid={{query.id}}' method="post">
+    {% csrf_token %}
+    <h4> Enter/edit criteria below </h4>
+    <textarea rows=3 cols=50 name="criteria">{{ query.criteria }}</textarea>
+    <br/><br/>
+    <input type="submit" value="Save changes" />
+  </form>
+
+  <br/><hr/><br/>
+
+  <h2> Users </h2>
+  <table class="light" style="width:100%">
+    <tr class="title">
+      <td>Username</td>
+      <td>Email</td>
+      <td>Active</td>
+      <td>Docs Assigned</td>
+      <td>Relevant Docs</td>
+      <td>Irrelevant Docs</td>
+      <td>Maybe Docs</td>
+    </tr>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>{{ u.email }}</td>
+        {% if u.onproject %}
+          <td>
+            <label class="switch">
+              <input type="checkbox" class="user_active" data-user="{{u.username}}" onchange="activate_user(this)" checked>
+              <div class="slider round"></div>
+            </label>
+          </td>
+        {% else %}
+          <td>
+            <label class="switch">
+              <input type="checkbox" class="user_active" data-user="{{u.username}}" onchange="activate_user(this)"></input>
+              <div class="slider round"></div>
+            </label>
+          </td>
+        {% endif %}
+
+        {% if u.user_docs.tdocs %}
+          <td>{{ u.user_docs.tdocs }} ({{ u.user_docs.checked_percent }}% checked)</td>
+          <td>{{ u.user_docs.reldocs }}</td>
+          <td>{{ u.user_docs.irreldocs }}</td>
+          <td>{{ u.user_docs.maybedocs }}</td>
+        {% else %}
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        {% endif %}
+
+      </tr>
+    {% endfor %}
+  </table>
+  <p style="text-align:left">
+    <div class="assignment_box">
+      <p>
+        <table id="split_table">
+          <tr>
+              <td>Double Check Documents
+            <td>
+              <label class="switch">
+                <input type="checkbox" id="split" onclick="updateAssignment()" checked />
+                <div class="slider round"></div>
+              </label>
+            </td>
+            <td>Split Documents</td>
+          </tr>
+        </table>
+      </p>
+      <p>Assign a total of <span id="docUserTotal"></span> documents each to <span id="userTotal"></span> users? <button onclick="do_assignment()">Assign</button></p>
+
+      <p>Clear all document-user assignments from this query? WARNING: This cannot be undone <button onclick="remove_assignments({{ query.id }})">Remove</button></p>
+
+    </div>
+  </p>
+
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+      </div>
+    </div>
+  </body>
+
+<script>
+
+var qid = {{ query.id }}
+
+var total_docs = 0
+
+var total_users = 0
+var docsplit = $("#split").is(':checked')
+
+$(".user_active").each(function() {
+    if ($(this).is(':checked')) {
+        total_users+=1
+    }
+})
+
+$(".tag_assignment").each(function(){
+    total_docs += parseInt($(this).text())
+})
+
+updateAssignment()
+
+function inputUpdate(x,t) {
+    $('#out_'+t).val(x)
+    updateAssignment()
+}
+
+
+function updateAssignment() {
+    var active_users = []
+    var tags = []
+    var tagdocs = []
+    var total_docs = 0
+    var docsplit = $("#split").is(':checked')
+    var title_only = $("#title_only").is(':checked')
+
+    $(".user_active").each(function() {
+        if ($(this).is(':checked')) {
+            active_users.push($(this).attr("data-user") )
+        }
+    })
+
+    $(".tag_assignment").each(function() {
+        tags.push($(this).attr("data-tagid") )
+        tagdocs.push($(this).val())
+            total_docs += parseInt($(this).val())
+    })
+    if (docsplit==true) {
+        docs_each = Math.ceil(total_docs/active_users.length)
+    } else {
+        docs_each = Math.ceil(total_docs)
+    }
+    $("#docUserTotal").text(docs_each)
+    $("#userTotal").text(total_users)
+}
+
+function activate_user(element) {
+    checked = element.checked
+    user = element.dataset.user
+    console.log(user)
+    $.ajax({
+        url: '/scoping/activate_user',
+        data: {
+            'qid': qid,
+            'user': user,
+            'checked': checked
+        },
+        success: function(data) {
+			if (typeof data == "string") {
+				alert("Looks like you don't have permission to do this")
+				element.checked = !checked
+			} else {
+		        total_users+=data
+		        updateAssignment()
+			}
+        },
+		error: function() {
+			alert("Looks like you don't have permission to do this")
+			element.checked = !checked
+		}
+    })
+}
+
+function do_assignment() {
+    console.log("assign")
+    var active_users = []
+	var tags = []
+    var tagdocs = []
+    $(".user_active").each(function() {
+        if ($(this).is(':checked')) {
+            active_users.push($(this).attr("data-user") )
+        }
+    })
+
+    $(".tag_assignment").each(function() {
+        tags.push($(this).attr("data-tagid") )
+        tagdocs.push($(this).val())
+    })
+    var proportion = $("#sample").val()
+	  console.log(active_users)
+    console.log(tags)
+    console.log(tagdocs)
+    console.log(qid)
+    var docsplit = $("#split").is(':checked')
+    var title_only = $("#title_only").is(':checked')
+    var title_ab_full = $("input[name='title_ab_full']:checked").val()
+    $.ajax({
+        url: '/scoping/assign_docs',
+        data : {
+            'qid': qid,
+            'users': active_users,
+            'tags': tags,
+            'tagdocs': tagdocs,
+            'docsplit': docsplit,
+            'title_ab_full': title_ab_full
+        },
+        success: function() {
+            location.reload()
+        }
+    })
+}
+
+function remove_assignments(qid) {
+	$.ajax({
+		url: '/scoping/remove_assignments',
+		data: {'qid':qid},
+		success: function() {
+			location.reload()
+		}
+	})
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "scoping/base_bs.html" %}
+{% block content %}
+
+<br>
+    <h1> Scoping Review Helper</h1>
+    <br/>
+
+    <!-- Query manager -->
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-md-8 bg-white border rounded p-3 m-2 text-center">
+
+          <h2> Query manager </h2>
+          <p>Use the buttons below to filter queries by user and category.
+             New queries can be made at the bottom of the page.</p>
+          <br/>
+          <p id="field_container">
+          {% for u in users %}
+              {% if u == user %}
+                <span id="thisuser" class="field_name user" name="{{u.id}}">{{ u.username }}</span>
+              {% else %}
+                <span class="field_name user technology" name="{{u.id}}">{{ u.username }}</span>
+              {% endif %}
+          {% endfor %}
+          </p>
+
+          <p id="field_container">
+            <span class="field_name tech active" name="None">None</span>
+            {% for t in techs %}
+              <span class="field_name tech active" name="{{t.id}}">{{ t.name }}</span>
+            {% endfor %}
+          </p>
+        </div>
+
+    </div>
+
+    <br>
+        <p>
+            <table class="table" id="query_table" style="width:100%">
+        {% include 'scoping/snippets/query_table.html' %}
+    </table>
+
+<br/><hr/><br/>
+
+<!-- This gets new queries -->
+
+
+<div>
+
+    <h2>Query Generator</h2>
+    <p>Use the buttons below to generate new queries summarising other queries and information entered in the platform
+    </p>
+    <div class="flex-row">
+            <a href="{% url 'scoping:generate_query' project.id 1 %}"<label class="btn btn-secondary m-2">All project documents</label></a>
+            <a href="{% url 'scoping:generate_query' project.id 2 %}"<label class="btn btn-secondary m-2">All relevant documents</label></a>
+            <a href="{% url 'scoping:generate_query' project.id 3 %}"<label class="btn btn-secondary m-2">All rated documents</label></a>
+    </div>
+    <div class="flex-row">
+            <a href="{% url 'scoping:generate_query' project.id 5 %}"<label class="btn btn-secondary m-2">All unrated documents</label></a>
+            <a href="{% url 'scoping:generate_query' project.id 4 %}"<label class="btn btn-secondary m-2">All conflicted / maybe documents</label></a>
+            <a href="{% url 'scoping:generate_query' project.id 6 %}"class="btn btn-secondary m-2">All Title-relevant docs</a>
+            <a href="{% url 'scoping:generate_query' project.id 7 %}"class="btn btn-secondary m-2">All Abstract-relevant docs</a>
+    </div>
+    <br>
+</div>
+<hr>
+
+
+
+
+
+<div class="explanation">
+<h2> Query Getter </h2>
+
+<p>
+    {% if '@mcc-berlin.net' in request.user.email or '@pik-potsdam' in request.user.email or request.user.profile.unlimited %}
+Use this form to submit a new query, which will be run in the background. Be aware that queries of external databases may take some time, and involve scraping outside websites and downloading large amounts of information.
+<p>It is recommended that you develop a query at the external page (<a href="http://apps.webofknowledge.com/WOS_AdvancedSearch_input.do?SID=3CWPGcaiOusPROlzkHF&product=WOS&search_mode=AdvancedSearch">Web of Science</a> or <a href="https://www.scopus.com/search/form.uri?display=advanced">Scopus</a>). When you enter it here, an assistant will type it into the box on the relevant page, download bibliographic information about all results, and upload them to the server where they can be analysed in more detail.
+<p>Note that larger queries (more than 2000 results in any single year) cannot currently be carried out in Scopus.
+
+    {% endif %}
+<p>"internal" queries compare and combine two existing queries, identified by their IDs, using the operators "NOT", "OR" and "AND"; e.g. "36 AND 42", or "42 NOT 36".
+</p>
+<form action="{% url 'scoping:create_query' project.id %}" method="post">
+  {% csrf_token %}
+
+  <h4> Query Title </h4>
+  <input type="text" name="qtitle"></input>
+
+  <input type="hidden" name="qtype" value="default"></input>
+
+  <h4> Query Source </h4>
+
+
+    <select name="qdb" id="databaseSelect" autocomplete="off">
+        {% if '@mcc-berlin.net' in request.user.email or '@pik-potsdam' in request.user.email or request.user.profile.unlimited %}
+        <option value="WoS">Web of Science</option>
+        <option value="scopus">Scopus</option>
+        {% endif %}
+        <option value="intern">Internal</option>
+    </select>
+
+
+    {% if '@mcc-berlin.net' in request.user.email or '@pik-potsdam' in request.user.email or request.user.profile.unlimited %}
+
+  <div >
+      <h4> Use my credentials? </h4>
+    <input type="checkbox" id="credential_check" name="credentials">
+    <label class="form-check-label" for="credential_check">Tick to use the credentials saved on your <a href="{% url 'scoping:userpage' project.id %}">user page</a></label>
+  </div>
+
+  <div>
+      <h4> Web of Science Database </h4>
+      <input type="text" id="wos_db_input" name="wos_db">
+      <label class="form-text-label" for="wos_db_input">Enter the web of science
+      database you would like to search (availability
+      may depend on your credentials). Leave blank for default (usually Web of Science Core Collection).
+      N.B. anything other than WoS Core may result in more results but with less information about them.
+  </label>
+
+  </div>
+
+  <div>
+      <h4> Collection list </h4>
+      <input type="text" id="collection_list" name="collections">
+      <label class="form-text-label" for="collection_list">Enter a comma separated
+          list e.g. "SSCI, A&HCI" of web of science indexes (availability
+          may depend on your credentials). Leave blank to include all collections</label>
+
+  </div>
+
+    {% endif %}
+  <h4> Query Text </h4>
+  <textarea rows=3 cols=50 name="qtext"></textarea>
+  <br/><br/>
+
+  <input type="submit" value="Search Query" />
+</form>
+</div>
+<p>
+
+
+<hr>
+
+
+<div class="explanation">
+<h2> Query Uploader </h2>
+
+<p>
+<a href="{% url 'scoping:query_create' project.id %}">Click</a> to upload a Web of Science or Scopus or RIS file you have downloaded yourself</a>
+
+</div>
+
+<p>
+
+
+{% endblock %}
+
+
+
+{% block script %}
+
+<script>
+
+$("#databaseSelect").change(function(){
+    v = $(this).val()
+    cc = $("#credential_check")
+    cl = $("#collection_list")
+    dl = $("#wos_db_input")
+    if (cc.length > 0) {
+        if (v != "WoS"){
+            cc.prop('checked', false)
+            cl.parent().hide()
+            cc.parent().hide()
+            dl.parent().hide()
+        } else {
+            cc.parent().show()
+            cl.parent().show()
+            dl.parent().show()
+        }
+    }
+})
+
+$(".field_name").click(get_table)
+
+function get_table() {
+  $("body").css("cursor", "progress");
+  $(this).toggleClass('active')
+  users = []
+  techs = []
+  $(".field_name.user.active").each(function(){
+      users.push($(this).attr('name'))
+  })
+  $(".field_name.tech.active").each(function(){
+      techs.push($(this).attr('name'))
+  })
+  console.log(users)
+  console.log(techs)
+
+  $.ajax({
+      url: "{% url 'scoping:query_table' project.id %}",
+      data: {
+          'users': users,
+          'techs': techs
+      },
+      success: function(res) {
+          $("#query_table").html(res)
+          $("body").css("cursor", "default");
+      }
+  })
+}
+
+$('#thisuser').click()
+
+
+$(".qtag").change(function() {
+    thing = $(this).attr("data-thing")
+    query = $(this).attr("data-query")
+    value = $(this).val()
+
+    $.ajax({
+        url: "{% url 'scoping:update_thing' %}",
+        data: {
+            'thing1': "Query",
+            'id1': query,
+            'thing2': thing,
+            'id2': value,
+            'method': "update"
+        },
+        success: function(data) {
+        }
+    })
+})
+
+</script>
+
+{% endblock %}

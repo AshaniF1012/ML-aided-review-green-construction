@@ -1,0 +1,338 @@
+{% extends "scoping/base_bs.html" %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block content %}
+
+<p>
+  <div class="m-4" >
+      <div id="graphBox" style="width:100%; height:20px"></div>
+  </div>
+<h2> Code document
+    {% if exclusions %}
+    - NOT RELEVANT
+    {% endif %}
+</h2>
+{% include "scoping/snippets/doc_info.html" with query=dmc.query %}
+
+<hr>
+
+<!-- Notes -->
+
+<p>
+    <h3>Notes</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 border rounded bg-white my-3 mx-2 p-2">
+            Add a note to this document
+            <hr>
+            <form action="{% url 'scoping:add_note' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <input type="hidden" name="docn" value="{{doc.id}}"></input>
+              <input type="hidden" name="project" value="{{project.id}}"></input>
+            <textarea class="form-control" name="note" rows=3></textarea>
+            <br>
+            <p>
+            <button type="submit" class="btn btn-primary">Add note</button>
+            </form>
+        </div>
+        {% for note in notes %}
+        <div class="col-md-3 border rounded bg-white my-3 mx-2 p-2 note">
+          <p class="notedesc"><b>{{note.date}}, {{note.user.username}} wrote...</b>
+          <hr>
+          {{note.text}}
+          <hr>
+          <a href="{% url 'scoping:delete' thing='Note' thingid=note.pk %}">Delete
+          </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<hr>
+
+<!-- Exclusion -->
+
+<h3>Exclusion</h3>
+<div class="container">
+<div class="row">
+    {% if not exclusions %}
+    <div class="col-md-3 border rounded bg-white my-3 mx-2 p-2">
+        <form action="{% url 'scoping:exclude' dmc.id  %}" method="post" class="form">
+        {% csrf_token %}
+        <div class="form-group" data-name="reason">
+        <select multiple
+            {% if ecs %}
+                name="reason"
+                class="form-control"
+            {% else %}
+                class="form-control hidden"
+            {% endif %}
+            id="reason"
+        >
+            {% for o in ecs %}
+                <option value="{{o.name}}">{{o.name}}</option>
+            {% endfor %}
+        </select>
+        <input
+        {% if ecs %}
+            class="form-control hidden"
+        {% else %}
+            name = "reason"
+            class="form-control"
+        {% endif %}
+            type="text"
+            class="form-control"
+            id="{{reason}}" ></input>
+        {% if ecs %}
+            <button type="button" class="btn other">Other</button>
+        {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Exclude document</button>
+        </form>
+    </div>
+    {% endif %}
+    {% for e in exclusions %}
+    <div class="col-md-3 border rounded bg-danger my-3 mx-2 p-2">
+        <p class="notedesc"><b>{{e.date}}, {{e.user.username}} excluded</b>
+        <hr>
+        {{e.reason}}
+        <hr>
+        <a href="{% url 'scoping:delete' thing='Exclusion' thingid=e.pk %}">Delete
+        </a>
+    </div>
+    {% endfor %}
+</div>
+</div>
+
+<hr>
+<!-- Interventions and effects -->
+
+<div class="container m-3">
+  <div class="row">
+    <div class="col-sm">
+        <h4>Effects</h4>
+        {% if effects %}
+            {% for f in effects %}
+                <div class="col-sm bg-white border rounded m-2 p-2 flex" id="eff_{{f.id}}">
+                    <div><a href="{% url 'scoping:add_effect' dmc.id f.id 1 %}">Effect</a> - {{f.coefficient}} -
+                    copy this <a href="{% url 'scoping:add_effect' dmc.id f.id %}"><span class="buttonp" id="reveal_new">v</span></a> <a class="confirmation" href="{% url 'scoping:delete' 'StudyEffect' f.id %}">x</a></div>
+                    <div>Add an intervention <a href="{% url 'scoping:add_intervention' f.id %}"<span class="buttonp" id="reveal_new">-></span></a></div>
+                </div>
+            {% endfor %}
+        {% else %}
+        <p>No effects are recorded for this study
+        {% endif %}
+        <p>Add one <a href="{% url 'scoping:add_effect' dmc.id %}"><span class="buttonp" id="reveal_new">+</span></a>
+    </div>
+    <div class="col-sm">
+        <h4>Interventions</h4>
+        {% if interventions %}
+            {% for f in interventions %}
+                <div class="col-sm bg-white border rounded m-2 p-2" id="int_{{f.id}}">
+                    <a href="{% url 'scoping:add_intervention' f.effect.id f.id 1 %}">{{f}}</a>
+                    <a class="confirmation" href="{% url 'scoping:delete' 'Intervention' f.id %}">x</a>
+
+                </div>
+            {% endfor %}
+        {% else %}
+        <p>No effects are recorded for this study
+        {% endif %}
+    </div>
+  </div>
+</div>
+
+<hr>
+<p>
+
+  <h3>Risk of Bias</h3>
+
+  {% if dmc.risk_of_bias %}
+    <a href="{% url 'scoping:rob_edit' dmc.id %}">
+    EDIT
+    <a/>
+  {% else %}
+
+    <a href="{% url 'scoping:rob_create' dmc.id %}">
+    Create
+    </a>
+  {% endif %}
+
+
+  <hr>
+  <p>
+
+
+
+
+
+<h3>Finished coding this document? (this will mark the document as "coded")</h3>
+</p>
+<div class="container">
+    <div class="row">
+        {% for d in dests %}
+        <div class="col">
+            <a href="{% url 'scoping:save_document_code' dmc.id d.0 %}">
+            <button class="btn btn-primary" type="button">
+                {{d.1}}
+            </button>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'scoping/js/jquery_connections.js' %}"></script>
+<script src="{% static 'scoping/js/forms.js' %}"></script>
+<script>
+  var json = {{dmcs|safe}}
+  var dmcid = {{dmc.id | safe}}
+  console.log(json)
+  width = "100%"
+  height = 20
+
+  var graph = d3.select("#graphBox")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  var div = d3.select("#graphBox").node().getBoundingClientRect()
+  var w = div.width;
+
+  var div = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+  console.log(w)
+  var url = window.location.href + '/1'
+  console.log(url)
+  var cmap = {
+      1: "#91cf60", 2: "#fc8d59", 3: "#ffffbf", 0: "#F5F5F5"
+  }
+  var urlparts = window.location.href.split("/")
+  var n = json.length
+  var h = 20
+  var rows = 1 + Math.floor(n/250)
+  var wn = (w*rows)/n
+  var hn = h/rows
+  var pos = {{pos|safe}}
+
+  console.log(wn)
+
+  var m = wn*0.1
+  if (m > 3) {
+      sw = 3
+  } else {
+      sw = m
+  }
+  if (wn > 5) {
+      m = 1.5
+  }
+  console.log(json)
+  graph.selectAll("rect")
+  .data(json)
+  .enter()
+  .append("rect")
+  .attr("x", function(d,i) {
+      return Math.floor(i/rows)*wn + m
+  })
+  .style("fill", function(d){
+      if (d.coded==false) {
+        if (d.excluded==false) {
+          r = 0
+        } else {
+          r = 2
+        }
+      } else {
+        if (d.excluded==false) {
+          r = 1
+        } else {
+          r = 2
+        }
+      }
+      return cmap[r]
+  })
+  .style("stroke", function(d) {
+      if (d.id==dmcid) {
+          return "red"
+      } else {
+          return "lightgrey"
+      }
+  })
+  .on("mouseover", function(d) {
+      chars = d.doc__title.length
+      approx_lines = Math.ceil(chars/40)
+      div.transition()
+          .duration(200)
+          .style("opacity", .9);
+      div	.html(d.doc__title)
+          .style("left", (d3.event.pageX) + "px")
+          .style("height", 10+10*approx_lines + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+      })
+  .on("mouseout", function(d) {
+      div.transition()
+          .duration(500)
+          .style("opacity", 0);
+  })
+  .on("click", function(d) {
+      //if (d.order <= pos) {
+          var link = '/scoping/code-document/'+d.id
+          window.location = link
+      //}
+  })
+  .attr("y",function(d,i) {
+      return (i%rows)*hn
+  })
+  .attr("height",  hn*0.8)
+  .attr("width", wn - m*2)
+  .attr("class", "scoped-doc")
+  .attr("rx", sw + "px")
+  .attr("ry", sw + "px")
+  .style("stroke-width", sw + "px")
+
+
+
+
+  $(window).on('resize',function() {
+      $('connection').remove()
+      data = {{connections | safe}}
+      console.log(data)
+      $.each(data, function(index, value) {
+          console.log(value)
+          jQuery('#eff_'+value.effect_id).connections({ to: '#int_'+value.id });
+      });
+
+      $('.confirmation').on('click', function () {
+           return confirm('Are you sure you want to delete this?');
+       });
+  });
+  $(document).ready(function() {
+      $(window).trigger('resize')
+  });
+</script>
+<script>
+  $(window).on('resize',function() {
+      $('connection').remove()
+      data = {{connections | safe}}
+      console.log(data)
+      $.each(data, function(index, value) {
+          console.log(value)
+          jQuery('#eff_'+value.effect_id).connections({ to: '#int_'+value.id });
+      });
+
+      $('.confirmation').on('click', function () {
+           return confirm('Are you sure you want to delete this?');
+       });
+  });
+  $(document).ready(function() {
+      $(window).trigger('resize')
+  });
+</script>
+
+
+{% endblock %}

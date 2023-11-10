@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border">
+
+    <a class="navbar-brand" href="#"></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+     <div class="collapse navbar-collapse" id="navbarSupportedContent">
+       <ul class="navbar-nav mr-auto">
+         <li class="nav-item active">
+           <a class="nav-link" href="{% url 'scoping:index' %}">Projects <span class="sr-only">(Projects)</span></a>
+         </li>
+         {% if project %}
+         <li class="nav-item">
+           <a class="nav-link" href="{% url 'scoping:project' project.id %}">Home <span class="sr-only">(Home)</span></a>
+         </li>
+         <li class="nav-item">
+           <a class="nav-link" href="{% url 'scoping:categories' project.id %}">Categories</a>
+         </li>
+         {% if project.criteria == None %}
+         <li class="nav-item">
+           <a class="nav-link" href="{% url 'scoping:queries' project.id %}">Queries</a>
+         </li>
+         {% endif %}
+         <li class="nav-item">
+           <a class="nav-link" href="{% url 'scoping:userpage' project.id %}">{{user}}</a>
+         </li>
+         {% if qid %}
+             <li class="nav-item"><a class="nav-link" href="{% url 'scoping:doclist' project.id qid %}">Documents</a></li>
+         {% endif %}
+         {% if project.criteria == None %}
+         <li class="nav-item"><a class="nav-link" href="{% url 'scoping:manual_add_doc_form' project.id %}">Add Reference Manually</a></li>
+         {% endif %}
+         <!-- <li class="nav-item">
+           <a class="nav-link" href="#">Link</a>
+         </li> -->
+         {% endif %}
+     </div>
+</nav>

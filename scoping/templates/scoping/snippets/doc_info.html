@@ -1,0 +1,58 @@
+<div id="docbox">
+
+  {% if merge %}
+    <button class="mergebutton" data-keep="{{merge.keep}}" data-throw="{{merge.throw}}">Merge and keep this copy</button>
+  {% endif %}
+<h4> {{ doc.title | safe }}</h4>
+
+<p style="text-align:left">
+{{ doc.content | safe }}
+</div>
+
+<p>{{ doc.wosarticle__so | safe}}
+    {% if doc.wosarticle__py %}
+        ({{ doc.wosarticle__py }})
+    {% endif %}
+    {% if doc.wosarticle__bp %}
+        {{ doc.wosarticle__bp }} - {{ doc.wosarticle__ep }}
+    {% endif %}
+    {% if doc.wosarticle__di %}
+    <a target="_blank" href="http://dx.doi.org/{{ doc.wosarticle__di | safe }}">{{ doc.wosarticle__di | safe}}</a>
+    {% endif %}
+    {% if doc.wosarticle__dt %}
+    Document type: {{doc.wosarticle__dt}}
+    {% endif %}
+<p style="text-align:left">
+{% for au in doc.authors %}
+<span>{% if au.AF %}
+    {{au.AF | safe}}
+    {% else %}
+    {{au.AU | safe }}
+    {% endif %}
+    [{{au.institution | safe}}];</span>
+{% endfor %}
+{% if doc.wosarticle__de %}
+<p style="text-align:left">
+    Author keywords: {{doc.wosarticle__de | safe}}
+{% endif %}
+{% if doc.wosarticle__kwp %}
+<p style="text-align:left">
+    WoS Keywords Plus: {{doc.wosarticle__kwp | safe}}
+{% endif %}
+
+
+{% if doc.id %}
+    {% if project.id %}
+      <p style="text-align:left">Document id: <a href="{% url 'scoping:document' project.id doc.id %}">{{doc.id}}</a>
+      <p/>
+    {% endif %}
+{% endif %}
+
+    
+{% if doc.docfile %}
+    <p style="text-align:left">
+        PDF: <a href="{% url 'scoping:download_pdf' doc.docfile.id %}">View</a>
+    </p>
+{% endif %}
+
+    
